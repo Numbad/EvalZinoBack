@@ -74,18 +74,17 @@ router.get("/get_pizzas") { request, response, next in
 }
 
 router.post("/get_ingredient") { request, response, next in
-    if let body = request.body?.asURLEncoded {
+    if let body = request.body?.asJSON {
         var ingredientsTosend = [String]()
         if body["pizzaId"] != nil, let p = body["pizzaId"] {
             for i in jsonRecette{
-                if (i["idPizza"] == Int(p)) {
-                    ingredientsTosend.append(jsonIngredients[i["idIngredient"]!]["nom"] as! String)
+                if (i["idPizza"] == (p as! Int)) {
+                    ingredientsTosend.append(jsonIngredients[i["idIngredient"]! - 1]["nom"] as! String)
                 }
                 
             }
             
         }
-        print("T##items: Any...##Any")
         response.send(json: ingredientsTosend)
     } else {
         print("p")
@@ -95,6 +94,32 @@ router.post("/get_ingredient") { request, response, next in
     next()
 }
 
+router.post("/get_ingredient_by_name") { request, response, next in
+    if let body = request.body?.asJSON {
+        var recetteToSend = [String]()
+        if body["ingredientName"] != nil, let p = body["ingredientName"] {
+            var ingredientId = 0
+            for j in jsonIngredients {
+                if j["nom"] as! String == p as! String  {
+                    ingredientId = j["id"] as! Int
+                }
+            }
+            for i in jsonRecette{
+                if (i["idIngredient"] == ingredientId) {
+                    recetteToSend.append(jsonPizzas[i["idPizza"]! - 1]["nom"] as! String)
+                }
+                
+            }
+            
+        }
+        response.send(json: recetteToSend)
+    } else {
+        print("p")
+        response.status(.notFound)
+    }
+    
+    next()
+}
 
 router.get("/create_recette") { request, response, next in
     
